@@ -43,7 +43,7 @@ Five (5) single-board computers (i.e., Raspoberry Pi 5 boards scaled by memory f
 * **Node C4 (8GB RAM) - Hippocampal Episodic Archive & Sleep Engine:** Utilizes 8GB LPDDR4X RAM to maintain an in-memory HNSW vector graph (Qdrant) backed by a PCIe Gen 3 NVMe SSD to record high-surprise episodic trajectories, maintain a semantic concept graph, and stream positive / negative replay batches during Slow-Wave Sleep.
 * **Node C5 (4GB RAM + 26 TOPS PCIe NPU Accelerator) - Frontal Associative & Vocal-Motor Hub:** Interfaces with an I2S audio amplifier and speaker (`vocal_associative_cortex.py`).
 Executes:
-  1. A continuous-time **4-Muscle Parametric Formant & Glottal Syrinc Synthesizer** controlled by a normalized vector $U_{\text{vocal}} = [F_0\text{\_Pitch}, A_{\text{Breath}}, F_1\text{\_Tongue}, F_2\text{\_Lips}] \in [0, 1]^4$ driving a Rosenberg glottal pulse and aspiration noise source through cascaded 2nd-order digital biquad resonators.
+  1. A continuous-time **4-Muscle Parametric Formant & Glottal Syrinc Synthesizer** controlled by a normalized vector $U_{\text{vocal}} = [F_{0, \text{Pitch}}, A_{\text{Breath}}, F_{1, \text{Tongue}}, F_{2, \text{Lips}}] \in [0, 1]^4$ driving a Rosenberg glottal pulse and aspiration noise source through cascaded 2nd-order digital biquad resonators.
   2. An online **Kohonen Self-Organizing Map (SOM) / Vector-Quantized Autoencoder** (64 proto-phoneme clusters) that clusters 64-band cochlear frames from Node C2 in real time.
   3. A **Hebbian Auditory-Motor Mirror Matrix** that binds self-generated acoustic clusters heard via Node C2 back to the motor vector $U_{\text{vocal}, t-1}$ that produced them.
 
