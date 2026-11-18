@@ -60,24 +60,38 @@ On each 25 ms waking clock tick $t$:
   * `Modality 6`: Node C2 (OAk-D Vision + 64-Band Cochlear Summary)
   * `Modality 7`: Node C5 (Frontal / Vocal Syrinx & SOM Cluster State)
 2. **Recurrent Self-Ingestion:** Node C1 constructs a 48-float input tensor $X_t$ comprising the 32 modalilty state floats ($8 \times 4$), the 8 per-modality surprise scalars, and the 8-element prior routing mask $M_{t-1}$, and passes $X_t$ alongside its own recurrent hidden state $H_{t-1} \in \mathbb{R}^{96}$ into the CfC/LTC cell:
-   $$H_t = \text{CfCCell}(X_t, H_{t-1}), \quad \text{Logits}_t = W_{\text{gate}} H_t + \beta \cdot S_{\text{surprise}, t}$$
+   $$
+   H_t = \text{CfCCell}(X_t, H_{t-1}),
+   \quad \text{Logits}_t = W_{\text{gate}} H_t + \beta \cdot S_{\text{surprise}, t}
+   $$
 3. **Salience-Modulated Dynamic Top-K Gate ($K=2 \rightarrow K=3$):** During baeline locomotion and tactile exploration, Node C1 enforces a strict bandwidth cap of $K_{\text{base}} = 2$. Whenever acoustic or vocal surprise on Modallity 6 or Modality 7 exceeds a threshold $\theta_{\text{audio}}$, the gate dynamically expands to $K_{\text{max}} = 3$:
-   $$K_t = \begin{cases} 3 & \text{if } \max(S_6, S_7) \ge \theta_{\text{audio}} \\ 2 & \text{otherwise} \end{cases}$$
+   $$
+   K_t = \begin{cases}
+   3 & \text{if } \max(S_6, S_7) \ge \theta_{\text{audio}} \\
+   2 & \text{otherwise}
+   \end{cases}
+   $$
    This enabled simultaneous tri-modal phase-locking across `[Visual Object + Tactile Tentacle + Acoustic / Vocal Contour]` for ostensive symbol grounding while preventing full-network seizure synchronization.
 
 #### 4.2 Enactive Self-World Separation, Vocal Grounding, and Behyaviorall Etiquette
 1. **Sensorimotor Contingency (`SELF` vs. `EXTERNAL_WORLD`):** For each phase-locked modality $m \in M_t$, Node C3 updates an exponential moving contingency score $C_m \in [0, 1]$ measuring how reliably motor command $U_{m, t-1}$ predicts state transition $\Delta S_{m, t}$:
-   $$C_{m, t} = (1 - \lambda) C_{m, t-1} + \lambda (1 - \Vert{}S_{m, t} - \hat{S}_{m, t}\Vert{}_2) \quad \text{for } \Vert{}U_{m, t-1}\Vert{}_2 > \epsilon$$
+   $$
+   C_{m, t} = (1 - \lambda) C_{m, t-1} + \lambda (1 - \Vert{}S_{m, t} - \hat{S}_{m, t}\Vert{}_2) \quad \text{for } \Vert{}U_{m, t-1}\Vert{}_2 > \epsilon
+   $$
    Modalities maintaining $C_m \ge 0.5$ (tentacles, wheels, vocal syrinx) are flagged as `SELF`; perturbations yielding low contingency ($C_m < 0.5$) are classified as `EXTERNAL_WORLD` agents or obstacles.
 2. **Self-Supervised Vocal Babbling & Mirror Imitation:** When Modality 7 (Node C5) is phase-locked into the active locus, Node C5 emits a 25 ms formant waveform synthesized from $U_{\text{vocal}, t-1}$. On tick $t$, Node C2 captures the resulting room acoustics, and Node C5's SOM maps the 64-band cochleagram to Best Matching Unit cluster $b^*$. A local Hebbian update binds cluster $b^*$ to $U_{\text{vocal}, t-1}$:
-   $$W_{\text{mirror}}[b^*] \leftarrow W_{\text{mirror}}[b^*] + \eta_{\text{mirror}} \left(U_{\text{vocal}, t-1} - W_{\text{mirror}}[b^*]\right)$$
+   $$
+   W_{\text{mirror}}[b^*] \leftarrow W_{\text{mirror}}[b^*] + \eta_{\text{mirror}} \left(U_{\text{vocal}, t-1} - W_{\text{mirror}}[b^*]\right)
+   $$
    Depending on which policy minimizes Expected Free Energy $G(\pi)$, the agent autonomously converges on vocal mimicry (reducing auditory prediction error), passive acoustic comprehension (linking human acoustic clusters to predicted physical consequences), or instrumental vocalization (emitting acoustic contours that actuate external caregivers to relieve homeostatic hunger / strain).
 3. **Inhibitory Etiquette Priors ("Synthetic Superego"):** Because Expected Free Energy $G(\pi)$ penalizes predicted edeviations from preferred homeostatic vector $V_{\text{pref}} = \mathbf{0}$ (which includes `Social Discomfort` on Node G2), negative social valence spikes paired with acoustic tokens or visual proximity consolidate during Slow-Wave Sleep into top-down inhibitory priors that automatically dampen actuator velocity / torque around protected entities.
 
 #### 4.3 Autonomous Slow-Wave Sleep Step-Down & Local Forward-Forward Consolidation when battery hunger or synaptic weigth norm saturation triggers `SLEEP_SYNC`:
 1. **Observer Severance:** Node C1 zeroes its recurrent self-state ($H_{t-1} = \mathbf{0}$) and broadcasts a closed routing mask (`node_id = 255`), silencing all actuators and the vocal syrinx.
 2. **Layer-Wise Forward-Forward Updates:** At the 1 Hz sleep clock, Node C4 streams positive waking episodes ($X_{\text{pos}}$) and shuffled / hallucinated negative counterfactuals ($X_{\text{neg}}$) to Node C3. Each `ForwardForwardLayer` updates its weights locally without global backpropagation by pusing squared-activation goodness $g(h) = \frac{1}{D}\sum_j h_j^2$ above threshold $\theta_{\text{FF}}$ for $X_{\text{pos}}$ and below $\theta_{\text{FF}}$ for $X_{\text{neg}}$:
-    $$\mathcal{L}_{\text{FF}} = \log\left(1 + e^{-(g(h_{\text{pos}}) - \theta_{\text{FF}})}\right) + \log\left(1 + e^{-(g(h_{\text{neg}}) - \theta_{\text{FF}})}\right)$$
+    $$
+    \mathcal{L}_{\text{FF}} = \log\left(1 + e^{-(g(h_{\text{pos}}) - \theta_{\text{FF}})}\right) + \log\left(1 + e^{-(g(h_{\text{neg}}) - \theta_{\text{FF}})}\right)
+    $$
 
 ---
 
